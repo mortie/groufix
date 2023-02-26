@@ -177,18 +177,24 @@ bool _gfx_vulkan_init(void)
 	if (glfwExtensions == NULL)
 		goto clean;
 
+	// TODO: Enable VK_EXT_swapchain_colorspace?
+	const char* extraExtensions[] = {
+#if !defined (NDEBUG)
+		"VK_EXT_debug_utils",
+#endif
+#ifdef __APPLE__
+		"VK_KHR_portability_enumeration",
+#endif
+	};
+
 	// We use a scope here so the goto above is allowed.
 	{
-		// TODO: Enable VK_EXT_swapchain_colorspace?
-		// Add our own extensions and layers if in debug mode.
-#if !defined (NDEBUG)
-		const uint32_t count = glfwCount + 1;
-		const char* extensions[count];
+		const uint32_t extensionCount = glfwCount + (sizeof(extraExtensions) / sizeof(*extraExtensions));
+		const char* extensions[extensionCount];
 		memcpy(extensions, glfwExtensions, sizeof(char*) * glfwCount);
+		memcpy(&extensions[glfwCount], extraExtensions, sizeof(extraExtensions));
 
-		// VK_EXT_debug_utils so we can log Vulkan debug messages.
-		extensions[glfwCount] = "VK_EXT_debug_utils";
-
+#if !defined (NDEBUG)
 		// Enable VK_LAYER_KHRONOS_validation if debug.
 		const char* layers[] = { "VK_LAYER_KHRONOS_validation" };
 #endif
@@ -242,20 +248,18 @@ bool _gfx_vulkan_init(void)
 		VkInstanceCreateInfo ici = {
 			.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 
-			.flags                   = 0,
+			.flags                   = 0x00000001, // VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
 			.pApplicationInfo        = &ai,
+			.enabledExtensionCount   = extensionCount,
+			.ppEnabledExtensionNames = extensions,
 #if defined (NDEBUG)
 			.pNext                   = NULL,
 			.enabledLayerCount       = 0,
 			.ppEnabledLayerNames     = NULL,
-			.enabledExtensionCount   = glfwCount,
-			.ppEnabledExtensionNames = glfwExtensions
 #else
 			.pNext                   = &dumci,
 			.enabledLayerCount       = sizeof(layers)/sizeof(char*),
 			.ppEnabledLayerNames     = layers,
-			.enabledExtensionCount   = count,
-			.ppEnabledExtensionNames = extensions
 #endif
 		};
 

@@ -743,7 +743,12 @@ static void _gfx_create_context(_GFXDevice* device)
 	// TODO: Enable VK_EXT_memory_budget?
 	// Enable VK_LAYER_KHRONOS_validation if debug,
 	// this is deprecated by now, but for older Vulkan versions.
-	const char* extensions[] = { "VK_KHR_swapchain" };
+	const char* extensions[] = {
+		"VK_KHR_swapchain",
+#ifdef __APPLE__
+		"VK_KHR_portability_subset",
+#endif
+	};
 #if !defined (NDEBUG)
 	const char* layers[] = { "VK_LAYER_KHRONOS_validation" };
 #endif
