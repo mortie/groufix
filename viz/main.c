@@ -8,19 +8,38 @@
 
 #include <groufix.h>
 #include <stdlib.h>
+#include <groufix/gilia/gilia.h>
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
 
 
 /****************************
  * grouviz entry point.
  */
-int main(void)
+int main(int argc, char **argv)
 {
-	if (!gfx_init())
+	if (!gfx_has_gilia()) {
+		fprintf(stderr, "Missing gilia support!\n");
 		exit(EXIT_FAILURE);
+	}
 
-	// TODO: Do things :)
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s <gilia file>\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
 
-	gfx_terminate();
+	FILE *f = fopen(argv[1], "r");
+	if (!f) {
+		fprintf(stderr, "Failed to open '%s': %s\n", argv[1], strerror(errno));
+		exit(EXIT_FAILURE);
+	}
 
+	if (!gfx_gilia_execute_file(f)) {
+		fprintf(stderr, "Failed to execute!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	fprintf(stderr, "Executed Gilia script.\n");
 	exit(EXIT_SUCCESS);
 }

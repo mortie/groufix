@@ -19,3 +19,6 @@
 [submodule "deps/cimgui"]
 	path = deps/cimgui
 	url = https://github.com/cimgui/cimgui
+[submodule "deps/gilia"]
+	path = deps/gilia
+	url = https://github.com/mortie/gilia.git

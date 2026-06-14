@@ -45,6 +45,7 @@ BUILD = build
 TEMP  = obj
 
 USE_WAYLAND = OFF
+USE_GILIA = OFF
 
 EXPORT_COMPILE_COMMANDS = ON
 
@@ -131,6 +132,10 @@ ifeq ($(CC_PREFIX),None)
  ifneq ($(OS),Windows_NT)
   LIB_FLAGS += -D_POSIX_C_SOURCE=200809L
  endif
+endif
+
+ifeq ($(USE_GILIA),ON)
+ LIB_FLAGS += -Ideps/gilia/include -DGFX_HAS_GILIA
 endif
 
 
@@ -315,6 +320,10 @@ DEPS = \
  $(BUILD)$(SUB)/SPIRV-Cross/libspirv-cross-c.a \
  $(BUILD)$(SUB)/SPIRV-Cross/libspirv-cross-core.a
 
+ifeq ($(USE_GILIA),ON)
+ DEPS += $(BUILD)$(SUB)/gilia/libgilia.a
+endif
+
 DEPS_EXPORT = \
  $(BUILD)$(SUB)/cimgui/cimgui.a
 
@@ -363,6 +372,10 @@ $(BUILD)$(SUB)/SPIRV-Cross/libspirv-cross-core.a:
 $(BUILD)$(SUB)/cimgui/cimgui.a:
 	@$(MAKE) $(MFLAGS_ALL) MAKEDIR=$(BUILD)$(SUB)/cimgui .makedir
 	@cd $(BUILD)$(SUB)/cimgui && cmake $(CIMGUI_FLAGS) $(CURDIR)/deps/cimgui && $(MAKE)
+
+$(BUILD)$(SUB)/gilia/libgilia.a:
+	@$(MAKE) $(MFLAGS_ALL) -C $(CURDIR)/deps/gilia OUT=$(abspath $(BUILD)$(SUB)/gilia) staticlib
+	@rm -rf $(BUILD)$(SUB)/gilia/lib
 
 
 # Object files
